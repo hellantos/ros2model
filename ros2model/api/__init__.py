@@ -40,6 +40,7 @@ def get_spec_files(path: Path, glob: str) -> list:
 def prepare_output_dir(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
 
+import re
 def split_line(line: str):
     """Split a line into a tuple of type and name.
 
@@ -50,14 +51,22 @@ def split_line(line: str):
         tuple: The type and name of the line.
     """
     line = line.replace('\n', '')
-    if line.startswith("#") or "=" in line or len(line) == 0:
+    if line.startswith("#") or "=" in line or len(line) == 0 or line.isspace():
         return None, None
     if "#" in line:
         line = line.split("#")[0]
-    split = line.split(" ")
+    if line.isspace():
+        return None, None
+    line = re.sub(
+           r"\[.*\]", 
+           "[]", 
+           line
+       )
+    split = line.split(maxsplit=1)
+    
     split[0] = split[0].replace("/", ".")
         
-    return split[0], split[1]
+    return split[0].strip(), split[1].strip()
 
 
 def process_msg_file(msg_file: Path):
