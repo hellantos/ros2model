@@ -192,8 +192,10 @@ def fix_topic_types(node_name:str , topics: Iterable[TopicInfo]):
 def fix_topic_names(node_name:str , topics: Iterable[TopicInfo]) -> Iterable[TopicInfo]:
     new_topics = []
     for topic in topics:
-        name = topic.name.replace("node_name", "")
-        name = name.replace("/", "")
+        if not node_name.startswith("/"):
+            node_name = "/node_name"
+        name = topic.name.replace(node_name, "~")
+        #name = name.replace("/", "")
         new_topics.append(TopicInfo(name, topic.types))
     return new_topics
 
