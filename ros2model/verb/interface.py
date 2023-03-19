@@ -32,10 +32,10 @@ class InterfacePackageVerb(VerbExtension):
         actions = process_action_dir(actions_path)
         print("Found {} messages, {} services and {} actions.".format(len(msgs), len(srvs), len(actions)))
         env = Environment(
-            loader=FileSystemLoader(get_package_share_directory("ros2model") + "/templates"), autoescape=True)
+            loader=FileSystemLoader(get_package_share_directory("ros2model") + "/templates"), autoescape=False)
         template = env.get_template("model.jinja")
         contents = template.render(package_name=args.interface_package_name, msgs=msgs, srvs=srvs, actions=actions)
         output_file = Path(args.output)
         print("Writing model to {}".format(output_file.absolute()))
         output_file.touch()
-        output_file.write_text(contents)
+        output_file.write_bytes(contents.encode("utf-8"))

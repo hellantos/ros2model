@@ -76,6 +76,10 @@ def process_msg_file(msg_file: Path):
             continue
         if variablename is None:
             continue
+        res = any(ele.isupper() for ele in typename)
+        if(res):
+            typename = '"' + typename + '"'
+            typename = typename.replace("[]", "") + "[]"
         message[variablename] = typename
     file.close()
     return name, message
@@ -96,6 +100,10 @@ def process_srv_file(srv_file: Path):
             continue
         if variablename is None:
             continue
+        res = any(ele.isupper() for ele in typename)
+        if(res):
+            typename = '"' + typename + '"'
+            typename = typename.replace("[]", "") + "[]"
         if resp:
             response[variablename] = typename
         else:
@@ -120,6 +128,10 @@ def process_action_file(action_file: Path):
             continue
         if variablename is None:
             continue
+        res = any(ele.isupper() for ele in typename)
+        if(res):
+            typename = '"' + typename + '"'
+            typename = typename.replace("[]", "") + "[]"
         if border == 0:
             goal[variablename] = typename
         if border == 1:
@@ -158,12 +170,23 @@ def process_action_dir(msg_path: Path):
 
 from ros2node.api import TopicInfo
 
-def fix_topic_types(topics: Iterable[TopicInfo]):
+def fix_topic_types(node_name:str , topics: Iterable[TopicInfo]):
     for topic in topics:
+        if "/" not in topic.types[0]:
+            topic.types[0] = '"' + topic.types[0] + '"'
         topic.types[0] = topic.types[0].replace("/msg/", ".")
         topic.types[0] = topic.types[0].replace("/srv/", ".")
         topic.types[0] = topic.types[0].replace("/action/", ".")
+        #topic.name = topic.name.replace("node_name", "")
         #topic.name = topic.name.replace("/", "")
+
+def fix_topic_names(node_name:str , topics: Iterable[TopicInfo]) -> Iterable[TopicInfo]:
+    new_topics = []
+    for topic in topics:
+        name = topic.name.replace("node_name", "")
+        name = name.replace("/", "")
+        new_topics.append(TopicInfo(name, topic.types))
+    return new_topics
 
 def get_parameter_type_string(parameter_type):
     mapping = {

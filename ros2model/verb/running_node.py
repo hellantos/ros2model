@@ -18,6 +18,7 @@ from ros2node.api import NodeNameCompleter
 from ros2param.api import call_list_parameters
 from ros2param.api import call_describe_parameters
 from ros2model.api import fix_topic_types
+from ros2model.api import fix_topic_names
 from ros2model.verb import VerbExtension
 from ros2model.api import get_parameter_type_string
 from ament_index_python import get_package_share_directory
@@ -66,22 +67,33 @@ class RunningNodeVerb(VerbExtension):
                 print(args.node_name)
                 subscribers = get_subscriber_info(
                     node=node, remote_node_name=args.node_name, include_hidden=args.include_hidden)
-                fix_topic_types(subscribers)
+                fix_topic_types(node_name, subscribers)
+                subscribers = fix_topic_names(node_name, subscribers)
+                
                 publishers = get_publisher_info(
                     node=node, remote_node_name=args.node_name, include_hidden=args.include_hidden)
-                fix_topic_types(publishers)
+                fix_topic_types(node_name, publishers)
+                publishers = fix_topic_names(node_name, publishers)
+                
                 service_servers = get_service_server_info(
                     node=node, remote_node_name=args.node_name, include_hidden=args.include_hidden)
-                fix_topic_types(service_servers)
+                fix_topic_types(node_name, service_servers)
+                service_servers = fix_topic_names(node_name, service_servers)
+                
                 service_clients = get_service_client_info(
                     node=node, remote_node_name=args.node_name, include_hidden=args.include_hidden)
-                fix_topic_types(service_clients)
+                fix_topic_types(node_name, service_clients)
+                service_clients = fix_topic_names(node_name, service_clients)
+                
                 actions_servers = get_action_server_info(
                     node=node, remote_node_name=args.node_name, include_hidden=args.include_hidden)
-                fix_topic_types(actions_servers)
+                fix_topic_types(node_name, actions_servers)
+                actions_servers = fix_topic_names(node_name, actions_servers)
+                
                 actions_clients = get_action_client_info(
                     node=node, remote_node_name=args.node_name, include_hidden=args.include_hidden)
-                fix_topic_types(actions_clients)
+                fix_topic_types(node_name, actions_clients)
+                actions_clients = fix_topic_names(node_name, actions_clients)
             else:
                 return "Unable to find node '" + args.node_name + "'"
             
