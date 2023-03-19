@@ -1,50 +1,51 @@
 {{ node_name.strip('/') }}:
     node: {{ node_name.strip('/') }}
-      {% if has_subscribers -%}
-      subscribers:
-        {% for subscriber in subscribers -%}
-        {{ subscriber.name.strip('/') }}:
-          type: {{ subscriber.types[0] }}
-        {%- endfor %}
-      {%- endif %}
-      {% if has_publishers -%}
-      publishers:
-        {% for publisher in publishers -%}
-        {{ publisher.name.strip('/') }}:
-          type: {{ publisher.types[0] }}
-        {% -endfor %}
-      {%- endif %}
-      {% if has_service_clients -%}
-      servicesclients:
-        {% for service in service_clients -%}
-        {{ service.name.strip('/') }}:
-          type: {{ service.types[0] }}
-        {% -endfor %}{%- endif %}
-      {% if has_service_servers -%}
-      servicesservers:
-        {% for service in service_servers -%}
-        {{ service.name.strip('/') }}:
-          type: {{ service.types[0] }}
-        {% -endfor %}
-      {%- endif %}
-      {% if has_action_clients -%}
-      actionsclients:
-        {% for action in action_clients -%}
-        {{ action.name.strip('/') }}:
-          type: {{ action.types[0] }}
-        {% -endfor %}
-      {%- endif %}
-      {% if has_action_servers -%}
-      actionsservers:
-        {% for action in action_servers -%}
-        {{ action.name.strip('/') }}:
-          type: {{ action.types[0] }}
-        {% -endfor %}
-      {%- endif %}
-      {% if has_parameters -%}
-      parameters:
-        {% for parameter in parameters -%}
-        {{ parameter.name.strip('/') }}:
-          type: {{ parameter.types }}
-        {% -endfor %}
-      {%- endif %}
+    {%- if has_subscribers %}
+    subscribers:
+      {%- for subscriber in subscribers %}
+      "{{ subscriber.name.strip('/') }}":
+        type: "{{ subscriber.types[0] }}"
+      {%- endfor %}
+    {%- endif %}
+    {%- if has_publishers %}
+    publishers:
+      {%- for publisher in publishers %}
+      "{{ publisher.name.strip('/') }}":
+        type: "{{ publisher.types[0] }}"
+      {%- endfor %}
+    {%- endif %}
+    {%- if has_service_clients %}
+    serviceclients:
+      {%- for service in service_clients %}
+      "{{ service.name.strip('/') }}":
+        type: "{{ service.types[0] }}"
+      {%- endfor %}
+    {%- endif %}
+    {%- if has_service_servers %}
+    serviceservers:
+      {%- for service in service_servers %}
+      "{{ service.name.strip('/') }}":
+        type: "{{ service.types[0] }}"
+      {%- endfor %}
+    {%- endif %}
+    {%- if has_action_clients %}
+    actionclients:
+      {%- for action in action_clients %}
+      "{{ action.name.strip('/') }}":
+        type: "{{ action.types[0] }}"
+      {%- endfor %}
+    {%- endif %}
+    {%- if has_action_servers %}
+    actionservers:
+      {%- for action in action_servers %}
+      "{{ action.name.strip('/') }}":
+        type: "{{ action.types[0] }}"
+      {%- endfor %}
+    {%- endif %}
+    {%- if has_parameters %}
+    parameters:
+      {%- for parameter in parameters %}
+      "{{ parameter.name.strip('/') }}":
+        type: {{ parameter.types }}
+      {%- endfor %}
+    {%- endif %}

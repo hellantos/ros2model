@@ -199,15 +199,15 @@ def fix_topic_names(node_name:str , topics: Iterable[TopicInfo]) -> Iterable[Top
 
 def get_parameter_type_string(parameter_type):
     mapping = {
-        ParameterType.PARAMETER_BOOL: 'bool',
-        ParameterType.PARAMETER_INTEGER: 'int',
-        ParameterType.PARAMETER_DOUBLE: 'double',
-        ParameterType.PARAMETER_STRING: 'string',
-        ParameterType.PARAMETER_BYTE_ARRAY: 'byte[]',
-        ParameterType.PARAMETER_BOOL_ARRAY: 'bool[]',
-        ParameterType.PARAMETER_INTEGER_ARRAY: 'int[]',
-        ParameterType.PARAMETER_DOUBLE_ARRAY: 'double[]',
-        ParameterType.PARAMETER_STRING_ARRAY: 'stirng[]',
-        ParameterType.PARAMETER_NOT_SET: 'not set',
+        ParameterType.PARAMETER_BOOL: 'Boolean',
+        ParameterType.PARAMETER_INTEGER: 'Integer',
+        ParameterType.PARAMETER_DOUBLE: 'Double',
+        ParameterType.PARAMETER_STRING: 'String',
+        ParameterType.PARAMETER_BYTE_ARRAY: 'Array: Byte',
+        ParameterType.PARAMETER_BOOL_ARRAY: 'Array: Boolean',
+        ParameterType.PARAMETER_INTEGER_ARRAY: 'Array: Integer',
+        ParameterType.PARAMETER_DOUBLE_ARRAY: 'Array: Double',
+        ParameterType.PARAMETER_STRING_ARRAY: 'Array: String',
+        ParameterType.PARAMETER_NOT_SET: 'Any',
     }
     return mapping[parameter_type]
