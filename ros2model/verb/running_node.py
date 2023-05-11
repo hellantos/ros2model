@@ -37,7 +37,7 @@ class RunningNodeVerb(VerbExtension):
         parser.add_argument(
             "-o",
             "--output",
-            default=".",
+            default=Path.cwd(),
             help="The output file for the generated model.",
         )
         parser.add_argument(
@@ -45,6 +45,12 @@ class RunningNodeVerb(VerbExtension):
             "--generate-all",
             action="store_true",
             help="Generate models for all node in current running system",
+        )
+        parser.add_argument(
+            "-dir",
+            "--output-dir",
+            default=".",
+            help="The output file for the generated model.",
         )
 
     def create_a_node_model(slef, target_node_name, output, args):
@@ -162,13 +168,21 @@ class RunningNodeVerb(VerbExtension):
         )
         print(contents)
         output_file = Path(output)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
         print("Writing model to {}".format(output_file.absolute()))
         output_file.touch()
         output_file.write_text(contents)
 
     def main(self, *, args):
         if not args.generate_all:
-            self.create_a_node_model(args.node_name, args.output, args)
+            if args.output != Path.cwd():
+                self.create_a_node_model(
+                    args.node_name, args.output, args.generate_value, args
+                )
+            else:
+                self.create_a_node_model(
+                    args.node_name, f"{args.node_name}.ros2", args.generate_value, args
+                )
         else:
             with NodeStrategy(args) as node:
                 for tmp_node in get_node_names(
@@ -176,5 +190,7 @@ class RunningNodeVerb(VerbExtension):
                 ):
                     if not re.search(r"transform_listener_impl", tmp_node.full_name):
                         self.create_a_node_model(
-                            tmp_node.full_name, f"{tmp_node.name}.ros2", args
+                            tmp_node.full_name,
+                            f"{args.output_dir}/{tmp_node.name}.ros2",
+                            args,
                         )
