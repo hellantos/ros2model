@@ -1,5 +1,6 @@
 import re
 import sys
+from collections import namedtuple
 from pathlib import Path
 from typing import List
 
@@ -13,11 +14,14 @@ from ros2node.api import (INFO_NONUNIQUE_WARNING_TEMPLATE, NodeNameCompleter,
                           get_node_names, get_publisher_info,
                           get_service_client_info, get_service_server_info,
                           get_subscriber_info)
-from ros2param.api import call_describe_parameters, call_list_parameters
+from ros2param.api import (call_describe_parameters, call_get_parameters,
+                           call_list_parameters, get_value)
 
 from ros2model.api import (fix_topic_names, fix_topic_types,
                            get_parameter_type_string)
 from ros2model.verb import VerbExtension
+
+ParamInfo = namedtuple("Topic", ("name", "types", "default"))
 
 
 class RunningNodeVerb(VerbExtension):
@@ -25,10 +29,20 @@ class RunningNodeVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name):
         add_arguments(parser)
-        argument = parser.add_argument(
+        group = parser.add_mutually_exclusive_group(required=True)
+
+        argument = group.add_argument(
             "-n", "--node_name", help="Node name to request information"
         )
         argument.completer = NodeNameCompleter()
+
+        group.add_argument(
+            "-ga",
+            "--generate-all",
+            action="store_true",
+            help="Generate models for all node in current running system",
+        )
+
         parser.add_argument(
             "--include-hidden",
             action="store_true",
@@ -40,12 +54,7 @@ class RunningNodeVerb(VerbExtension):
             default=Path.cwd(),
             help="The output file for the generated model.",
         )
-        parser.add_argument(
-            "-ga",
-            "--generate-all",
-            action="store_true",
-            help="Generate models for all node in current running system",
-        )
+
         parser.add_argument(
             "-dir",
             "--output-dir",
@@ -53,14 +62,21 @@ class RunningNodeVerb(VerbExtension):
             help="The output file for the generated model.",
         )
 
-    def create_a_node_model(slef, target_node_name, output, args):
+        parser.add_argument(
+            "-gv",
+            "--generate-value",
+            action="store_true",
+            help="Wheather adding parameter value",
+        )
+
+    def create_a_node_model(slef, target_node_name, output, if_param_value, args):
         subscribers: List[TopicInfo] = []
         publishers: List[TopicInfo] = []
         service_clients: List[TopicInfo] = []
         service_servers: List[TopicInfo] = []
         actions_clients: List[TopicInfo] = []
         actions_servers: List[TopicInfo] = []
-        parameters: List[TopicInfo] = []
+        parameters: List[ParamInfo] = []
 
         with NodeStrategy(args) as node:
             node_name = get_absolute_node_name(target_node_name)
@@ -135,10 +151,15 @@ class RunningNodeVerb(VerbExtension):
                 node=node, node_name=node_name, parameter_names=sorted_names
             )
             for descriptor in describe_resp.descriptors:
+                get_value_resp = call_get_parameters(
+                    node=node, node_name=node_name, parameter_names=[
+                        descriptor.name]
+                )
                 parameters.append(
-                    TopicInfo(
-                        descriptor.name, get_parameter_type_string(
-                            descriptor.type)
+                    ParamInfo(
+                        descriptor.name,
+                        get_parameter_type_string(descriptor.type),
+                        get_value(parameter_value=get_value_resp.values[0]),
                     )
                 )
 
@@ -165,6 +186,7 @@ class RunningNodeVerb(VerbExtension):
             has_actions_clients=len(actions_clients) > 0,
             has_actions_servers=len(actions_servers) > 0,
             has_parameters=len(parameters) > 0,
+            if_parameter_value=if_param_value,
         )
         print(contents)
         output_file = Path(output)
@@ -192,5 +214,6 @@ class RunningNodeVerb(VerbExtension):
                         self.create_a_node_model(
                             tmp_node.full_name,
                             f"{args.output_dir}/{tmp_node.name}.ros2",
+                            args.generate_value,
                             args,
                         )
