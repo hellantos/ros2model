@@ -4,8 +4,10 @@ from collections import namedtuple
 from pathlib import Path
 from typing import List
 
+import rclpy
 from ament_index_python import get_package_share_directory
 from jinja2 import Environment, FileSystemLoader
+from rcl_interfaces.srv import ListParameters
 from ros2cli.node.direct import DirectNode
 from ros2cli.node.strategy import NodeStrategy, add_arguments
 from ros2node.api import (INFO_NONUNIQUE_WARNING_TEMPLATE, NodeNameCompleter,
@@ -15,13 +17,41 @@ from ros2node.api import (INFO_NONUNIQUE_WARNING_TEMPLATE, NodeNameCompleter,
                           get_service_client_info, get_service_server_info,
                           get_subscriber_info)
 from ros2param.api import (call_describe_parameters, call_get_parameters,
-                           call_list_parameters, get_value)
+                           get_value)
 
 from ros2model.api import (fix_topic_names, fix_topic_types,
                            get_parameter_type_string)
 from ros2model.verb import VerbExtension
 
 ParamInfo = namedtuple("Topic", ("name", "types", "default"))
+
+
+def call_list_parameters(*, node, node_name, timeout=None):
+    # create client
+    client = node.create_client(ListParameters, f"{node_name}/list_parameters")
+
+    # call as soon as ready
+    ready = client.wait_for_service(timeout_sec=5.0)
+    if not ready:
+        raise RuntimeError("Wait for service timed out")
+
+    request = ListParameters.Request()
+    future = client.call_async(request)
+    rclpy.spin_until_future_complete(
+        node=node, future=future, timeout_sec=timeout)
+
+    # handle response
+    response = future.result()
+    if response is None:
+        try:
+            e = future.exception()
+        except:
+            error = RuntimeError(
+                f"Exception while calling service of node '{node_name}': {e}"
+            )
+        return response
+    else:
+        return response.result.names
 
 
 class RunningNodeVerb(VerbExtension):
@@ -69,7 +99,7 @@ class RunningNodeVerb(VerbExtension):
             help="Wheather adding parameter value",
         )
 
-    def create_a_node_model(slef, target_node_name, output, if_param_value, args):
+    def create_a_node_model(self, target_node_name, output, if_param_value, args):
         subscribers: List[TopicInfo] = []
         publishers: List[TopicInfo] = []
         service_clients: List[TopicInfo] = []
@@ -144,24 +174,28 @@ class RunningNodeVerb(VerbExtension):
                 return "Unable to find node '" + target_node_name + "'"
 
         with DirectNode(args) as node:
-            response = call_list_parameters(node=node, node_name=node_name)
+            response = call_list_parameters(
+                node=node, node_name=node_name, timeout=5.0)
 
-            sorted_names = sorted(response)
-            describe_resp = call_describe_parameters(
-                node=node, node_name=node_name, parameter_names=sorted_names
-            )
-            for descriptor in describe_resp.descriptors:
-                get_value_resp = call_get_parameters(
-                    node=node, node_name=node_name, parameter_names=[
-                        descriptor.name]
+            if response is not None:
+                sorted_names = sorted(response)
+                describe_resp = call_describe_parameters(
+                    node=node, node_name=node_name, parameter_names=sorted_names
                 )
-                parameters.append(
-                    ParamInfo(
-                        descriptor.name,
-                        get_parameter_type_string(descriptor.type),
-                        get_value(parameter_value=get_value_resp.values[0]),
+                for descriptor in describe_resp.descriptors:
+                    get_value_resp = call_get_parameters(
+                        node=node,
+                        node_name=node_name,
+                        parameter_names=[descriptor.name],
                     )
-                )
+                    parameters.append(
+                        ParamInfo(
+                            descriptor.name,
+                            get_parameter_type_string(descriptor.type),
+                            get_value(
+                                parameter_value=get_value_resp.values[0]),
+                        )
+                    )
 
         env = Environment(
             loader=FileSystemLoader(
