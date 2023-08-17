@@ -1,9 +1,15 @@
-# ROS Model integation into ROS2 Command
+# ROS Model integration into ROS2 Command
 
+### Create ".ros" file for the interface package.
+#### Create a ".ros" model for an interface package.
 ```
 ros2 model interface_package [-o Outputfile] <package-name>
 ```
-Creates a .ros file for the interface package.
+#### Create ".ros" models for all interface package in the workspace.
+
+```
+ros2 model interface_package -a -o <folder-name>
+```
 
 ```
 ros2 model running_node [-o Outputfile] <node-name>
