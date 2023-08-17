@@ -69,7 +69,10 @@ def split_line(line: str):
 
     split[0] = split[0].replace("/", "/msg/")
 
-    return split[0].strip(), split[1].strip()
+    if len(split) > 1:
+        return split[0].strip(), split[1].strip()
+    else:
+        return split[0].strip(), None
 
 
 def process_msg_file(msg_file: Path, package_name: str):
