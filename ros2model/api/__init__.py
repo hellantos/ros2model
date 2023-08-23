@@ -219,9 +219,9 @@ def fix_topic_types(node_name: str, topics: Iterable[TopicInfo]):
     for topic in topics:
         if "/" not in topic.types[0]:
             topic.types[0] = '"' + topic.types[0] + '"'
-        topic.types[0] = topic.types[0].replace("/msg/", ".")
-        topic.types[0] = topic.types[0].replace("/srv/", ".")
-        topic.types[0] = topic.types[0].replace("/action/", ".")
+        # topic.types[0] = topic.types[0].replace("/msg/", ".")
+        # topic.types[0] = topic.types[0].replace("/srv/", ".")
+        # topic.types[0] = topic.types[0].replace("/action/", ".")
         # topic.name = topic.name.replace("node_name", "")
         # topic.name = topic.name.replace("/", "")
 
