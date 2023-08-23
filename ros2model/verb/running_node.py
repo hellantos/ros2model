@@ -1,6 +1,7 @@
 import re
 import sys
 from collections import namedtuple
+from itertools import filterfalse
 from pathlib import Path
 from typing import List
 
@@ -24,6 +25,38 @@ from ros2model.api import (fix_topic_names, fix_topic_types,
 from ros2model.verb import VerbExtension
 
 ParamInfo = namedtuple("Topic", ("name", "types", "default"))
+
+BlackList_Subscribers = [
+    TopicInfo("/parameter_events", ["rcl_interfaces/msg/ParameterEvent"])
+]
+BlackList_Publishers = [
+    TopicInfo("~/transition_event", ["lifecycle_msgs/msg/TransitionEvent"]),
+    TopicInfo("/parameter_events", ["rcl_interfaces/msg/ParameterEvent"]),
+    TopicInfo("/rosout", ["rcl_interfaces/msg/Log"]),
+]
+BlackList_ServiceServers = [
+    TopicInfo("~/change_state", ["lifecycle_msgs/srv/ChangeState"]),
+    TopicInfo("~/describe_parameters",
+              ["rcl_interfaces/srv/DescribeParameters"]),
+    TopicInfo("~/get_available_states",
+              ["lifecycle_msgs/srv/GetAvailableStates"]),
+    TopicInfo(
+        "~/get_available_transitions", [
+            "lifecycle_msgs/srv/GetAvailableTransitions"]
+    ),
+    TopicInfo("~/get_parameter_types",
+              ["rcl_interfaces/srv/GetParameterTypes"]),
+    TopicInfo("~/get_parameters", ["rcl_interfaces/srv/GetParameters"]),
+    TopicInfo("~/get_state", ["lifecycle_msgs/srv/GetState"]),
+    TopicInfo("~/get_transition_graph",
+              ["lifecycle_msgs/srv/GetAvailableTransitions"]),
+    TopicInfo("~/list_parameters", ["rcl_interfaces/srv/ListParameters"]),
+    TopicInfo("~/set_parameters", ["rcl_interfaces/srv/SetParameters"]),
+    TopicInfo(
+        "~/set_parameters_atomically", [
+            "rcl_interfaces/srv/SetParametersAtomically"]
+    ),
+]
 
 
 def call_list_parameters(*, node, node_name, timeout=None):
@@ -130,6 +163,10 @@ class RunningNodeVerb(VerbExtension):
                 )
                 fix_topic_types(node_name, subscribers)
                 subscribers = fix_topic_names(node_name, subscribers)
+                subscribers = list(
+                    filterfalse(
+                        BlackList_Subscribers.__contains__, subscribers)
+                )
 
                 publishers = get_publisher_info(
                     node=node,
@@ -138,6 +175,9 @@ class RunningNodeVerb(VerbExtension):
                 )
                 fix_topic_types(node_name, publishers)
                 publishers = fix_topic_names(node_name, publishers)
+                publishers = list(
+                    filterfalse(BlackList_Publishers.__contains__, publishers)
+                )
 
                 service_servers = get_service_server_info(
                     node=node,
@@ -146,6 +186,10 @@ class RunningNodeVerb(VerbExtension):
                 )
                 fix_topic_types(node_name, service_servers)
                 service_servers = fix_topic_names(node_name, service_servers)
+                service_servers = list(
+                    filterfalse(
+                        BlackList_ServiceServers.__contains__, service_servers)
+                )
 
                 service_clients = get_service_client_info(
                     node=node,
@@ -175,7 +219,7 @@ class RunningNodeVerb(VerbExtension):
 
         with DirectNode(args) as node:
             response = call_list_parameters(
-                node=node, node_name=node_name, timeout=5.0)
+                node=node, node_name=node_name, timeout=1.0)
 
             if response is not None:
                 sorted_names = sorted(response)
