@@ -54,6 +54,10 @@
         {%- else %}
           type: {{ parameter.types }}
         {%- endif %}
+        {%- if 'String' in parameter.types %}
+          value: "{{ parameter.default |safe }}"
+        {%- else %}
           value: {{ parameter.default |safe }}
+        {%- endif %}
         {%- endfor %}
       {%- endif %}
