@@ -104,8 +104,8 @@ class RunningNodeVerb(VerbExtension):
         publishers: List[TopicInfo] = []
         service_clients: List[TopicInfo] = []
         service_servers: List[TopicInfo] = []
-        actions_clients: List[TopicInfo] = []
-        actions_servers: List[TopicInfo] = []
+        action_clients: List[TopicInfo] = []
+        action_servers: List[TopicInfo] = []
         parameters: List[ParamInfo] = []
 
         with NodeStrategy(args) as node:
@@ -155,21 +155,21 @@ class RunningNodeVerb(VerbExtension):
                 fix_topic_types(node_name, service_clients)
                 service_clients = fix_topic_names(node_name, service_clients)
 
-                actions_servers = get_action_server_info(
+                action_servers = get_action_server_info(
                     node=node,
                     remote_node_name=target_node_name,
                     include_hidden=args.include_hidden,
                 )
-                fix_topic_types(node_name, actions_servers)
-                actions_servers = fix_topic_names(node_name, actions_servers)
+                fix_topic_types(node_name, action_servers)
+                action_servers = fix_topic_names(node_name, action_servers)
 
-                actions_clients = get_action_client_info(
+                action_clients = get_action_client_info(
                     node=node,
                     remote_node_name=target_node_name,
                     include_hidden=args.include_hidden,
                 )
-                fix_topic_types(node_name, actions_clients)
-                actions_clients = fix_topic_names(node_name, actions_clients)
+                fix_topic_types(node_name, action_clients)
+                action_clients = fix_topic_names(node_name, action_clients)
             else:
                 return "Unable to find node '" + target_node_name + "'"
 
@@ -210,15 +210,15 @@ class RunningNodeVerb(VerbExtension):
             publishers=publishers,
             service_clients=service_clients,
             service_servers=service_servers,
-            actions_clients=actions_clients,
-            actions_servers=actions_servers,
+            action_clients=action_clients,
+            action_servers=action_servers,
             parameters=parameters,
             has_subscribers=len(subscribers) > 0,
             has_publishers=len(publishers) > 0,
             has_service_clients=len(service_clients) > 0,
             has_service_servers=len(service_servers) > 0,
-            has_actions_clients=len(actions_clients) > 0,
-            has_actions_servers=len(actions_servers) > 0,
+            has_action_clients=len(action_clients) > 0,
+            has_action_servers=len(action_servers) > 0,
             has_parameters=len(parameters) > 0,
             if_parameter_value=if_param_value,
         )
