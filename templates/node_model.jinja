@@ -17,28 +17,28 @@
         {%- endfor %}
       {%- endif %}
       {%- if has_service_clients %}
-      serviceClients:
+      serviceclients:
         {%- for service in service_clients %}
         "{{ service.name.strip('/') }}":
           type: "{{ service.types[0] }}"
         {%- endfor %}
       {%- endif %}
       {%- if has_service_servers %}
-      serviceServers:
+      serviceservers:
         {%- for service in service_servers %}
         "{{ service.name.strip('/') }}":
           type: "{{ service.types[0] }}"
         {%- endfor %}
       {%- endif %}
       {%- if has_action_clients %}
-      actionClients:
+      actionclients:
         {%- for action in action_clients %}
         "{{ action.name.strip('/') }}":
           type: "{{ action.types[0] }}"
         {%- endfor %}
       {%- endif %}
       {%- if has_action_servers %}
-      actionServers:
+      actionservers:
         {%- for action in action_servers %}
         "{{ action.name.strip('/') }}":
           type: "{{ action.types[0] }}"
@@ -54,6 +54,6 @@
         {%- else %}
           type: {{ parameter.types }}
         {%- endif %}
-          default: {{ parameter.default |safe }}
+          value: {{ parameter.default |safe }}
         {%- endfor %}
       {%- endif %}
